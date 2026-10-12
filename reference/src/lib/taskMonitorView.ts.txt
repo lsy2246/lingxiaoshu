@@ -1,0 +1,7 @@
+// 面试参考摘录：用于理解原项目边界，不参与本题构建；未附全项目依赖。
+export function taskMonitorView(taskKey: string | undefined, status: string) {
+  if (taskKey === 'content_mode_routing') return 'routing';
+  if (taskKey === 'content_quality_gate') return 'quality';
+  if (['succeeded', 'completed', 'cancelled', 'failed'].includes(status)) return 'result';
+  return 'browser';
+}

@@ -1,0 +1,6 @@
+// 面试参考摘录：用于理解原项目边界，不参与本题构建；未附全项目依赖。
+export * from './socialContentReplication.js';
+export * from '../sceneVisualContract.js';
+export * from './socialContentDiscovery.js';
+export * from './socialContentAgentContract.js';
+export * from './socialContentTaskContract.js';

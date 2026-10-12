@@ -1,0 +1,87 @@
+[
+  {
+    "originalPath": "src/components/smartBusiness/AgentWeeklyCalendar.tsx",
+    "sourceSha256": "aa9924b52eecbf5cc08829ef0c1f8f52d70cc555d1bbe640d3d205347b31d4b0",
+    "referenceFile": "reference/src/components/smartBusiness/AgentWeeklyCalendar.tsx.txt"
+  },
+  {
+    "originalPath": "src/components/smartBusiness/ConnectedAgentCalendar.tsx",
+    "sourceSha256": "940c29f38cf5ef6d6ba85994091382c8233ab40fa0bcdb3aaa14ec724ee7b3bc",
+    "referenceFile": "reference/src/components/smartBusiness/ConnectedAgentCalendar.tsx.txt"
+  },
+  {
+    "originalPath": "src/components/smartBusiness/DigitalEmployeeWorkspace.tsx",
+    "sourceSha256": "13d6dd6c9750cefc05be6f1f9e87598efcb91347679f9462585e3dbf6215363a",
+    "referenceFile": "reference/src/components/smartBusiness/DigitalEmployeeWorkspace.tsx.txt"
+  },
+  {
+    "originalPath": "src/components/smartBusiness/WeeklyContentProgressPanel.tsx",
+    "sourceSha256": "10cfeaa006e7d099325c12febd368b349110e5255abb0d364e6181bff7db598c",
+    "referenceFile": "reference/src/components/smartBusiness/WeeklyContentProgressPanel.tsx.txt"
+  },
+  {
+    "originalPath": "src/components/socialContent/useStudioSocialTaskHydration.ts",
+    "sourceSha256": "039de2059092410140bb88f87a10f976b9ea8155e40add3c214dafb1acac5394",
+    "referenceFile": "reference/src/components/socialContent/useStudioSocialTaskHydration.ts.txt"
+  },
+  {
+    "originalPath": "src/lib/taskExecutionState.ts",
+    "sourceSha256": "cd3ef3235a9b84d11633b6be80da7f0d0b4bdae950346f298ef0b26b3dad0dd6",
+    "referenceFile": "reference/src/lib/taskExecutionState.ts.txt"
+  },
+  {
+    "originalPath": "src/lib/taskMonitorView.ts",
+    "sourceSha256": "4c455180136231b957ad0b16e98cd58cba451aefc245274d6a6d743bb1d2a62b",
+    "referenceFile": "reference/src/lib/taskMonitorView.ts.txt"
+  },
+  {
+    "originalPath": "src/lib/studioSocialTaskRead.ts",
+    "sourceSha256": "6ab942194b138ba3340643266c7d98e1ec6896298cb40f2ea1ccda409ec0b39f",
+    "referenceFile": "reference/src/lib/studioSocialTaskRead.ts.txt"
+  },
+  {
+    "originalPath": "src/lib/weeklyContentNavigationApi.ts",
+    "sourceSha256": "e6a8e53c096a1d65c2951571bf6f9141481c3c15b0a83591d640ecfbd60a41e0",
+    "referenceFile": "reference/src/lib/weeklyContentNavigationApi.ts.txt"
+  },
+  {
+    "originalPath": "src/lib/weeklyContentProductionView.ts",
+    "sourceSha256": "55add76da8b043ee47900742ed49245285d5d047ac53e52da3c2657445ef2983",
+    "referenceFile": "reference/src/lib/weeklyContentProductionView.ts.txt"
+  },
+  {
+    "originalPath": "server/routes/socialPrograms.ts",
+    "sourceSha256": "e0b1bc3af4948e21d81c293476bd8c2a4405fc3b7bacb372504511577c08c3e1",
+    "referenceFile": "reference/server/routes/socialPrograms.ts.txt"
+  },
+  {
+    "originalPath": "server/socialPrograms/weeklyContentNavigation.ts",
+    "sourceSha256": "3ef0d6b56cf7d3a3825ba31ec518c488efef1bd8aaad65ae6ce604899098d0da",
+    "referenceFile": "reference/server/socialPrograms/weeklyContentNavigation.ts.txt"
+  },
+  {
+    "originalPath": "server/starter198/socialContentRouter.ts",
+    "sourceSha256": "111ba2de07b06af8d9c1151c0b180e2aa15884178b445b7d9fd34df7669c0415",
+    "referenceFile": "reference/server/starter198/socialContentRouter.ts.txt"
+  },
+  {
+    "originalPath": "server/starter198/socialContentRecords.ts",
+    "sourceSha256": "612b6de0de6686a8da9630dfc659b52c804d5355c422fcc2f8819911b4eab585",
+    "referenceFile": "reference/server/starter198/socialContentRecords.ts.txt"
+  },
+  {
+    "originalPath": "shared/contracts/weeklyContentNavigation.ts",
+    "sourceSha256": "f70ba0b0fb43026e81202809613ccbd9bda33858707d7cabf665c3330a8e4499",
+    "referenceFile": "reference/shared/contracts/weeklyContentNavigation.ts.txt"
+  },
+  {
+    "originalPath": "shared/contracts/socialContentWorkflow.ts",
+    "sourceSha256": "b974a5b4b754079a5b5c989864fcea7b33cf78385aafa162d26e5727e85df70e",
+    "referenceFile": "reference/shared/contracts/socialContentWorkflow.ts.txt"
+  },
+  {
+    "originalPath": "shared/contracts/socialProgram.ts",
+    "sourceSha256": "a0e44055fd9d6b4eabb90f95d8a3b03ce8aad0f2356ba64aebea8ab614bff75d",
+    "referenceFile": "reference/shared/contracts/socialProgram.ts.txt"
+  }
+]

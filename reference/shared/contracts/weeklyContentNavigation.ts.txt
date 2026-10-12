@@ -1,0 +1,9 @@
+// 面试参考摘录：用于理解原项目边界，不参与本题构建；未附全项目依赖。
+import type {VersionedSocialRef,WeeklyExecutionTask} from './socialProgram.js';
+export function isWeeklyContentNavigationExecution(task:WeeklyExecutionTask):boolean {
+ return task.workflowKind==='content'&&['material_preparation','script','storyboard','material_readiness','asset_generation','video_generation','quality_check','rework','user_approval'].includes(task.schedule.stepKind)
+  ||task.workflowKind==='directing'&&['script','storyboard'].includes(task.schedule.stepKind)
+  ||task.workflowKind==='publishing'&&task.schedule.stepKind==='publishing';
+}
+export interface WeeklyContentNavigationScope {tenantId:string;programId:string;packageId:string;packageVersion:number;executionTaskId:string}
+export interface WeeklyContentNavigation {scope:WeeklyContentNavigationScope;publicationTaskId:string;contentTaskId:string;runId:string|null;artifactRef:VersionedSocialRef|null;bindingKey:string;source:'production_binding'|'completed_artifact';gaps:string[]}
