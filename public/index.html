@@ -1,1 +1,199 @@
-<!doctype html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI全栈工程师实操</title><link rel="stylesheet" href="/style.css"></head><body><main><h1>Agent任务看板与生产工作台</h1><p>合成业务数据 · 本地SQLite · 无外部调用</p><form id="create"><label>任务名称 <input id="title" required maxlength="200" value="我的联调任务"></label><button>创建任务</button></form><button id="refresh">刷新看板</button><p id="message" role="status"></p><section id="cards"></section><section id="detail"><h2>生产详情</h2><p>请选择任务卡。</p></section></main><script type="module" src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0b1220" />
+    <title>映生 Studio · 数字人视频工作台</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="app-shell" class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">映</span
+          ><span>映生 <small>STUDIO</small></span>
+        </div>
+        <nav class="main-nav" aria-label="主导航">
+          <button class="nav-item active" data-view="works">
+            <span class="nav-icon">▤</span>我的作品
+          </button>
+          <button class="nav-item" data-view="humans">
+            <span class="nav-icon">◉</span>我的数字人
+          </button>
+        </nav>
+        <div class="sidebar-foot">
+          <span class="status-dot"></span><span>本地工作区</span
+          ><span class="mono">tenant-a</span>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">VIDEO CREATOR / 01</p>
+            <h1 id="page-title">我的作品</h1>
+          </div>
+          <div class="top-actions">
+            <button
+              class="icon-button"
+              id="refresh"
+              title="刷新任务"
+              aria-label="刷新任务"
+            >
+              ↻
+            </button>
+            <div class="avatar">L</div>
+          </div>
+        </header>
+
+        <div id="message" class="toast" role="status" aria-live="polite"></div>
+
+        <section id="works-view" class="view active-view">
+          <section class="workspace-projects works-page">
+            <div class="view-heading workspace-heading">
+              <div>
+                <p class="section-kicker">WORKSPACE</p>
+                <h2>我的作品</h2>
+              <p class="muted">选择已有作品继续编辑，或从剧本模板开始一条新视频。</p>
+              </div>
+              <button class="primary-button" data-view="create">＋ 新建视频</button>
+            </div>
+            <div id="works-list" class="works-list"></div>
+          </section>
+        </section>
+
+        <section id="create-view" class="view editor-view">
+          <div class="editor-heading">
+            <button id="back-to-works" class="subtle-button">← 我的作品</button>
+            <div class="editor-project-meta">
+              <p class="section-kicker">VIDEO WORKSPACE</p>
+              <h2 id="editor-project-title">视频工作流</h2>
+              <span id="editor-project-status" class="muted">草稿</span>
+            </div>
+            <div class="editor-actions">
+              <button class="text-button" data-view="humans">管理数字人 <span>↗</span></button>
+            </div>
+          </div>
+          <section class="workflow-section">
+            <div class="canvas-toolbar">
+              <div class="canvas-title">
+                <span class="canvas-kicker">WORKFLOW CANVAS</span>
+                <strong>生成流程 <span id="node-count" class="count-badge">0</span></strong>
+              </div>
+              <div class="toolbar-actions">
+                <button id="toggle-palette" class="subtle-button" aria-pressed="false">节点库</button>
+                <button id="toggle-inspector" class="subtle-button" aria-pressed="false">检查器</button>
+                <button id="fit-canvas" class="subtle-button">适应画布</button>
+                <button id="workflow-templates" class="subtle-button">模板</button>
+                <button id="add-node" class="primary-button">
+                  ＋ 添加节点
+                </button>
+              </div>
+            </div>
+            <div
+              id="workflow-issues"
+              class="workflow-issues"
+              role="status"
+              hidden
+            ></div>
+            <div class="workflow-layout">
+              <aside class="node-palette" aria-label="节点库">
+                <div class="palette-heading">
+                  <strong>节点库</strong>
+                  <span>拖入或点击添加</span>
+                </div>
+                <div id="node-palette-list"></div>
+              </aside>
+              <div class="canvas-wrap" id="canvas-wrap">
+                <div class="canvas-grid"></div>
+                <div
+                  id="workflow-canvas"
+                  class="workflow-canvas"
+                  aria-label="视频生成流程画布"
+                ></div>
+                <div class="canvas-hint">
+                  <span>拖动空白平移 · 滚轮缩放</span><span>·</span
+                  ><span>点击节点编辑</span>
+                </div>
+              </div>
+              <aside id="inspector" class="inspector">
+                <div class="inspector-empty">
+                  <span class="empty-icon">⌁</span><strong>选择一个节点</strong>
+                  <p>查看详情、修改提示词，或设置从这里继续生成。</p>
+                </div>
+              </aside>
+            </div>
+            <div class="editor-toolbar" role="toolbar" aria-label="工作流编辑工具">
+              <button id="layout-nodes" class="subtle-button">自动布局</button>
+              <button id="duplicate-node" class="subtle-button">复制选中节点</button>
+              <button id="delete-node" class="danger-button">删除选中节点</button>
+              <button id="snap-grid" class="subtle-button" aria-pressed="true">网格吸附 · 开</button>
+              <button id="focus-canvas" class="subtle-button" aria-pressed="false">专注画布</button>
+              <button id="cancel-connection" class="subtle-button" hidden>取消连接</button>
+            </div>
+          </section>
+
+          <div class="run-bar">
+            <div class="run-context">
+              <span class="run-icon">✦</span>
+              <div>
+                <strong id="run-label">准备好开始</strong
+                ><span id="run-subtitle">按输入依赖执行，已有结果会被复用</span>
+              </div>
+            </div>
+            <div class="run-actions">
+              <button id="save-workflow" class="subtle-button">保存流程</button
+              ><button id="generate" class="generate-button">
+                <span>一键生成视频</span><span class="arrow">→</span>
+              </button>
+            </div>
+          </div>
+          <section class="mock-panel" aria-label="状态机演示控制">
+            <div class="mock-panel-heading">
+              <div>
+                <span class="canvas-kicker">DEMO STATE MACHINE</span>
+                <strong>Mock 状态控制</strong>
+              </div>
+              <span id="mock-state" class="mock-state-badge">未载入</span>
+            </div>
+            <p class="muted">用演示数据观察节点状态、人工等待、失败和完成，不会调用真实生成服务。</p>
+            <div class="mock-actions" role="toolbar" aria-label="Mock 状态操作">
+              <button id="mock-seed" class="subtle-button">填充示例数据</button>
+              <button id="mock-step" class="subtle-button">执行下一节点</button>
+              <button id="mock-wait" class="subtle-button">模拟人工等待</button>
+              <button id="mock-fail" class="subtle-button">模拟失败</button>
+              <button id="mock-complete" class="primary-button">直接完成</button>
+              <button id="mock-reset" class="danger-button">重置状态</button>
+            </div>
+            <div id="mock-history" class="mock-history" aria-live="polite"></div>
+          </section>
+        </section>
+
+        <section id="humans-view" class="view">
+          <div class="view-heading">
+            <div>
+              <p class="section-kicker">DIGITAL HUMANS</p>
+              <h2>我的数字人</h2>
+              <p class="muted">上传资料后自动训练，完成后即可用于视频生成。</p>
+            </div>
+            <button id="create-human" class="primary-button">
+              ＋ 创建数字人
+            </button>
+          </div>
+          <div id="human-library" class="human-library"></div>
+          <p class="demo-notice">
+            本地演示 · 上传资料保存在本机，训练与试播使用模拟执行器和内置媒体。
+          </p>
+        </section>
+
+        <form id="create" class="legacy-hidden">
+          <input id="title" value="我的联调任务" /><button>创建任务</button>
+        </form>
+        <section id="cards" class="legacy-hidden"></section>
+        <section id="detail" class="legacy-hidden"></section>
+      </main>
+    </div>
+    <script type="module" src="/app.js?v=20261012-split-12"></script>
+  </body>
+</html>

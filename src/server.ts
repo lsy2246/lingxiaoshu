@@ -6,6 +6,7 @@ import {Store} from './store';
 import {projectTask} from './projection';
 import {productionDetail} from './production';
 import {execute,executionModes,type ExecutionMode} from './executor';
+import {studioRoute} from './studio';
 /** 当前身份来自服务端启动配置，不能由 URL/body 修改。无需实现 OAuth；测试时可启动 tenant-b 实例。 */
 export function createApp(options:{dbPath:string;tenantId:string;publicDir:string}){
  const store=new Store(options.dbPath);
@@ -14,12 +15,13 @@ export function createApp(options:{dbPath:string;tenantId:string;publicDir:strin
   try{
    const url=new URL(req.url??'/','http://localhost');const path=url.pathname;
    if(req.method==='GET'&&!path.startsWith('/api/')){
-    const files:Record<string,string>={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/media/demo.mp4':'media/demo.mp4','/media/demo.wav':'media/demo.wav'};
+    const files:Record<string,string>={'/':'index.html','/app.js':'app.js','/studio.js':'studio.js','/graph-editor.js':'graph-editor.js','/workflow.js':'workflow.js','/style.css':'style.css','/media/demo.mp4':'media/demo.mp4','/media/demo.wav':'media/demo.wav'};
     const file=files[path];if(!file)return send(404,{error:'not_found'});
     const type=file.endsWith('.mp4')?'video/mp4':file.endsWith('.wav')?'audio/wav':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html; charset=utf-8';
-    const data=await readFile(resolve(options.publicDir,file));res.writeHead(200,{'Content-Type':type,'Content-Length':data.length});res.end(data);return;
+   const data=await readFile(resolve(options.publicDir,file));res.writeHead(200,{'Content-Type':type,'Content-Length':data.length,'Cache-Control':'no-store, no-cache, must-revalidate'});res.end(data);return;
    }
    if(req.method==='GET'&&path==='/api/session')return send(200,{tenantId:options.tenantId});
+   if(await studioRoute(req,path,store,options.tenantId,send))return;
    if(req.method==='GET'&&path==='/api/tasks')return send(200,store.read().tasks.filter(t=>t.tenantId===options.tenantId).map(projectTask));
    const readBody=async()=>{let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>100000)throw Error('body_too_large')}return JSON.parse(raw||'{}') as Record<string,unknown>};
    if(req.method==='POST'&&path==='/api/tasks'){
