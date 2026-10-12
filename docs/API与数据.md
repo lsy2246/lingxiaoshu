@@ -7,7 +7,7 @@
 | GET /api/session | 无 | 当前模拟组织 |
 | GET /api/tasks | 无 | 当前组织任务，带展示状态 |
 | POST /api/tasks | {"title":"新联调任务"} | 201，新任务和对应内容一起持久化 |
-| GET /api/tasks/:id/production | 可选delayMs=1500，最大2000 | task、content、artifact；读取绑定待修 |
+| GET /api/tasks/:id/production | 可选delayMs=1500，最大2000 | 校验租户和生产绑定后返回 task、content、artifact；历史产物按任务绑定读取 |
 | PUT /api/tasks/:id/content | {"narration":"新口播","scenes":[{"id":"scene-1","description":"新分镜"}]} | 保存内容，媒体为受控本地文件 |
 | POST /api/tasks/:id/execute | {"mode":"running"}，或missing_authorization、failure、success | 更新真实记录；success追加产物版本 |
 

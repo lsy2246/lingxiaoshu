@@ -28,7 +28,12 @@ async function openTask(id){
   const narration=document.createElement('textarea');narration.value=view.content.narration;root.append(text('h3','口播文本'),narration);
   const sceneInputs=view.content.scenes.map(scene=>{const input=document.createElement('textarea');input.value=scene.description;root.append(text('h3','分镜 '+scene.id),input);return {scene,input}});
   const save=text('button','保存修改');save.onclick=async()=>{try{save.disabled=true;await api('/api/tasks/'+encodeURIComponent(id)+'/content',json('PUT',{narration:narration.value,scenes:sceneInputs.map(({scene,input})=>({id:scene.id,description:input.value}))}));message('修改已保存','success')}catch(e){message(e instanceof Error?e.message:'保存失败')}finally{save.disabled=false}};root.append(save);
-  if(view.artifact){root.append(text('h3','成片 '+view.artifact.artifactId+' / '+view.artifact.version));const video=document.createElement('video');video.controls=true;video.src=view.artifact.videoUrl;const audio=document.createElement('audio');audio.controls=true;audio.src=view.artifact.audioUrl;root.append(video,audio)}else root.append(text('p','尚无成片'));
+  if(view.artifact){
+   root.append(text('h3','成片 '+view.artifact.artifactId+' / '+view.artifact.version));
+   const mediaStatus=text('p','');const video=document.createElement('video');video.controls=true;video.src=view.artifact.videoUrl;video.onerror=()=>{mediaStatus.textContent='视频文件暂不可用，请重新生成或检查媒体文件。'};
+   const audio=document.createElement('audio');audio.controls=true;audio.src=view.artifact.audioUrl;audio.onerror=()=>{mediaStatus.textContent='音频文件暂不可用，请重新生成或检查媒体文件。'};
+   root.append(video,audio,mediaStatus)
+  }else root.append(text('p','尚无成片'));
   const back=text('button','返回看板');back.onclick=()=>{detailRequest++;root.replaceChildren(text('p','请选择任务卡'));selected=null};root.append(back);
  }catch(e){if(requestId!==detailRequest||selected!==id)return;root.replaceChildren(text('h2','无法打开生产详情'),text('p',e instanceof Error?e.message:'请求失败'));message(e instanceof Error?e.message:'打开详情失败')}
 }

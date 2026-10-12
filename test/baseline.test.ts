@@ -34,3 +34,22 @@ test('new pending tasks do not claim an execution run before execution',async t=
  const f=await fixture(t);const created=await fetch(f.url+'/api/tasks',body('POST',{title:'No run yet'}));assert.equal(created.status,201);const task=await created.json();assert.equal(task.runId,undefined);
  const executed=await fetch(f.url+'/api/tasks/'+task.id+'/execute',body('POST',{mode:'success'}));assert.equal(executed.status,200);const result=await executed.json();assert.match(result.runId,/^run-/);
 });
+test('projection keeps approval, cancellation, and unknown statuses explicit',async t=>{
+ const f=await fixture(t);f.store.update(state=>{
+  state.tasks.push(
+   {id:'task-approval',tenantId:'tenant-a',title:'等待审批',status:'waiting_approval',createdAt:new Date().toISOString()},
+   {id:'task-cancelled',tenantId:'tenant-a',title:'已取消',status:'cancelled',createdAt:new Date().toISOString()},
+   {id:'task-unknown',tenantId:'tenant-a',title:'未知状态',status:'future_state',createdAt:new Date().toISOString()},
+  );
+ });
+ const tasks=await (await fetch(f.url+'/api/tasks')).json();
+ assert.equal(tasks.find((task:any)=>task.id==='task-approval').statusLabel,'等待审批');
+ assert.equal(tasks.find((task:any)=>task.id==='task-cancelled').statusLabel,'已取消');
+ assert.equal(tasks.find((task:any)=>task.id==='task-unknown').statusLabel,'未知状态');
+});
+test('missing media stays an explicit unavailable resource',async t=>{
+ const f=await fixture(t);f.store.update(state=>{state.contents.find(content=>content.taskId==='content-a')!.artifacts[0].videoUrl='/media/missing.mp4'});
+ const detail=await (await fetch(f.url+'/api/tasks/task-done/production')).json();assert.equal(detail.artifact.videoUrl,'/media/missing.mp4');
+ const media=await fetch(f.url+detail.artifact.videoUrl);assert.equal(media.status,404);
+ const appJs=await (await fetch(f.url+'/app.js')).text();assert.match(appJs,/视频文件暂不可用/);
+});
