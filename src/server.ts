@@ -24,19 +24,18 @@ export function createApp(options:{dbPath:string;tenantId:string;publicDir:strin
    const readBody=async()=>{let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>100000)throw Error('body_too_large')}return JSON.parse(raw||'{}') as Record<string,unknown>};
    if(req.method==='POST'&&path==='/api/tasks'){
     const body=await readBody();if(typeof body.title!=='string'||!body.title.trim()||body.title.length>200)return send(400,{error:'title_required'});
-    const task=store.update(state=>{const id='task-'+randomUUID();const contentId='content-'+randomUUID();const runId='run-'+randomUUID();const task={id,tenantId:options.tenantId,title:(body.title as string).trim(),status:'pending',productionTaskId:contentId,runId,createdAt:new Date().toISOString()};state.tasks.push(task);state.contents.push({taskId:contentId,tenantId:options.tenantId,version:'v1',runId,sources:[],artifacts:[],scenes:[{id:'scene-'+randomUUID(),description:'新任务默认分镜',mediaUrl:'/media/demo.mp4'}],narration:'请编辑口播'});return task});return send(201,task);
+    const task=store.update(state=>{const id='task-'+randomUUID();const contentId='content-'+randomUUID();const task={id,tenantId:options.tenantId,title:(body.title as string).trim(),status:'pending',productionTaskId:contentId,createdAt:new Date().toISOString()};state.tasks.push(task);state.contents.push({taskId:contentId,tenantId:options.tenantId,version:'v1',sources:[],artifacts:[],scenes:[{id:'scene-'+randomUUID(),description:'新任务默认分镜',mediaUrl:'/media/demo.mp4'}],narration:'请编辑口播'});return task});return send(201,task);
    }
    const match=path.match(/^\/api\/tasks\/([^/]+)\/(production|execute|content)$/);
    if(!match)return send(404,{error:'not_found'});
    const taskId=decodeURIComponent(match[1]);const action=match[2];const task=store.read().tasks.find(t=>t.id===taskId);
    if(!task)return send(404,{error:'task_not_found'});
+   if(task.tenantId!==options.tenantId)return send(404,{error:'task_not_found'});
    if(req.method==='GET'&&action==='production'){
-    // 考题：可控延迟用于复现浏览器快速切换时的旧请求覆盖。身份及绑定校验需要补齐。
+    // Controlled delay makes stale browser responses deterministic in tests.
     const delay=Math.min(2000,Math.max(0,Number(url.searchParams.get('delayMs'))||0));if(delay)await new Promise(r=>setTimeout(r,delay));
     return send(200,productionDetail(store.read(),task));
    }
-   // 写接口有组织边界；候选人需要让读接口达到同等保障。
-   if(task.tenantId!==options.tenantId)return send(404,{error:'task_not_found'});
    if(req.method==='POST'&&action==='execute'){
     const body=await readBody();if(!executionModes.includes(body.mode as ExecutionMode))return send(400,{error:'invalid_mode'});
     const result=store.update(state=>{const fresh=state.tasks.find(t=>t.id===taskId)!;execute(state,fresh,body.mode as ExecutionMode);return fresh});return send(200,result);
@@ -46,6 +45,17 @@ export function createApp(options:{dbPath:string;tenantId:string;publicDir:strin
     const content=store.update(state=>{const c=state.contents.find(c=>c.taskId===task.productionTaskId&&c.tenantId===options.tenantId);if(!c)throw Error('production_not_bound');c.narration=body.narration as string;c.scenes=(body.scenes as {id:string;description:string}[]).map(s=>({id:s.id,description:s.description,mediaUrl:'/media/demo.mp4'}));return c});return send(200,content);
    }
    send(405,{error:'method_not_allowed'});
-  }catch(e){console.error(JSON.stringify({event:'request_failed',path:req.url,error:e instanceof Error?e.message:'unknown'}));send(e instanceof SyntaxError?400:500,{error:e instanceof SyntaxError?'invalid_json':'request_failed'})}
+  }catch(e){
+   const code=e instanceof Error?e.message:'unknown';
+   console.error(JSON.stringify({event:'request_failed',path:req.url,error:code}));
+   const known:Record<string,{status:number;message:string}>={
+    production_not_bound:{status:409,message:'该任务尚未绑定生产内容'},
+    artifact_not_found:{status:409,message:'该任务绑定的历史成片不存在'},
+    body_too_large:{status:413,message:'请求内容过大'},
+   };
+   if(e instanceof SyntaxError)return send(400,{error:'invalid_json',message:'请求不是有效的 JSON'});
+   const response=known[code];
+   return send(response?.status??500,{error:response?code:'request_failed',message:response?.message??'请求处理失败'});
+  }
  });return {server,store};
 }

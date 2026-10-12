@@ -1,6 +1,17 @@
 import type {State,Task} from './contracts';
-/** 考题缺口 B/C：读取详情尚未核验组织、任务绑定和原产物版本。读取本身没有执行副作用。 */
+
+/** Read only the content and delivery explicitly bound to this task. */
 export function productionDetail(state:State,task:Task){
- const content=state.contents.find(c=>c.taskId===task.productionTaskId)??state.contents[0];
- return {task,content,artifact:content.artifacts.at(-1)??null};
+ if(!task.productionTaskId)throw Error('production_not_bound');
+ const content=state.contents.find(c=>c.taskId===task.productionTaskId&&c.tenantId===task.tenantId);
+ if(!content)throw Error('production_not_bound');
+ const hasArtifactBinding=Boolean(task.artifactId||task.artifactVersion);
+ const artifact=hasArtifactBinding
+  ? content.artifacts.find(candidate=>candidate.taskId===content.taskId
+    &&candidate.artifactId===task.artifactId
+    &&candidate.version===task.artifactVersion
+    &&(!task.runId||candidate.runId===task.runId))??null
+  : null;
+ if(hasArtifactBinding&&!artifact)throw Error('artifact_not_found');
+ return {task,content,artifact};
 }

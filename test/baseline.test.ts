@@ -17,3 +17,20 @@ test('invalid writes and foreign writes do not mutate stored data',async t=>{con
 test('detail reads are side effect free',async t=>{const f=await fixture(t);const before=f.store.read();for(let i=0;i<3;i++){const r=await fetch(f.url+'/api/tasks/task-done/production');assert.equal(r.status,200)}assert.deepEqual(f.store.read(),before)});
 test('transaction failure rolls back; reset restores only fixture state',()=>{const dir=mkdtempSync(join(tmpdir(),'interview-rollback-'));const store=new Store(join(dir,'db.sqlite'));try{const before=store.read();assert.throws(()=>store.update(state=>{state.tasks=[];throw Error('simulated failure')}));assert.deepEqual(store.read(),before);store.update(state=>{state.tasks=[]});store.reset();assert.deepEqual(store.read(),initialState())}finally{store.close();rmSync(dir,{recursive:true,force:true})}});
 test('provided stale-read guard rejects late task application',async()=>{let current=true,writes=0;let release!:(x:ReturnType<typeof initialState>['contents'][number])=>void;const promise=readCurrentStudioSocialTask('content-a',()=>new Promise(r=>release=r),()=>current,()=>writes++);current=false;release(initialState().contents[0]);await promise;assert.equal(writes,0)});
+test('production reads enforce tenant, binding, and historical artifact identity',async t=>{
+ const f=await fixture(t);
+ const historical=await fetch(f.url+'/api/tasks/task-done/production');assert.equal(historical.status,200);
+ const historicalBody=await historical.json();assert.equal(historicalBody.artifact.artifactId,'film-1');assert.equal(historicalBody.artifact.version,'v1');assert.equal(historicalBody.artifact.runId,'run-1');
+ const unbound=await fetch(f.url+'/api/tasks/task-unbound/production');assert.equal(unbound.status,409);const unboundBody=await unbound.json();assert.equal(unboundBody.error,'production_not_bound');assert.match(unboundBody.message,/尚未绑定/);
+ const foreign=await fetch(f.url+'/api/tasks/task-foreign/production');assert.equal(foreign.status,404);
+});
+test('task projection reflects real status and attention state',async t=>{
+ const f=await fixture(t);const response=await fetch(f.url+'/api/tasks');assert.equal(response.status,200);const tasks=await response.json();
+ assert.equal(tasks.find((task:any)=>task.id==='task-running').statusLabel,'执行中');
+ const blocked=tasks.find((task:any)=>task.id==='task-blocked');assert.equal(blocked.statusLabel,'需要补充资料');assert.equal(blocked.needsAttention,true);
+ assert.equal(tasks.find((task:any)=>task.id==='task-done').statusLabel,'已完成');
+});
+test('new pending tasks do not claim an execution run before execution',async t=>{
+ const f=await fixture(t);const created=await fetch(f.url+'/api/tasks',body('POST',{title:'No run yet'}));assert.equal(created.status,201);const task=await created.json();assert.equal(task.runId,undefined);
+ const executed=await fetch(f.url+'/api/tasks/'+task.id+'/execute',body('POST',{mode:'success'}));assert.equal(executed.status,200);const result=await executed.json();assert.match(result.runId,/^run-/);
+});
